@@ -1,21 +1,19 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import { CameraView } from 'expo-camera';
+import DocumentScanner from 'react-native-document-scanner-plugin';
 
-// Miroir de ScanService.dart
-
-// Mode 1: Smart scan — utilise expo-image-picker avec mode de découpage
+// Mode 1: Smart scan — utilise le scanner professionnel avec détection de contours
 export async function startSmartScan(): Promise<string[] | null> {
   try {
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 0.9,
-      base64: false,
+    const { scannedImages } = await DocumentScanner.scanDocument({
+      maxNumDocuments: 10,
+      letUserAdjustCrop: true,
     });
 
-    if (result.canceled) return null;
-    return result.assets.map(a => a.uri);
+    if (scannedImages && scannedImages.length > 0) {
+      return scannedImages;
+    }
+    return null;
   } catch (e) {
     console.error('Erreur Smart Scan:', e);
     return null;
