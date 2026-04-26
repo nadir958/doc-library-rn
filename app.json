@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Doc Library",
+    "name": "WiselyDocs",
     "slug": "doc-library-rn",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,6 +21,7 @@
       }
     },
     "android": {
+      "package": "com.nadir958.doclibrary",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0C1322"
@@ -32,7 +33,8 @@
         "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -62,6 +64,12 @@
           "faceIDPermission": "Doc Library uses Face ID to protect your documents."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f2e8408c-7e75-4bb9-8107-72a7cbf5786c"
+      }
+    }
   }
 }
