@@ -7,7 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../src/theme/theme';
 import { Colors, Radius, Spacing, Typography } from '../../src/theme/colors';
@@ -25,11 +25,20 @@ export default function DashboardScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCaptureModal, setShowCaptureModal] = useState(false);
 
-  const { documents, allTags, isLoading, loadDocuments, search, filterByTag, deleteDocument } = useDocumentStore();
+  const { documents, allTags, isLoading, loadDocuments, search, filterByTag, filterByFolder, deleteDocument } = useDocumentStore();
+  const { folders } = useFolderStore();
+  const { folderId } = useLocalSearchParams<{ folderId: string }>();
+
+  // Trouver le nom du dossier si folderId est présent
+  const currentFolder = folderId ? folders.find(f => String(f.id) === folderId) : null;
 
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    if (folderId) {
+      filterByFolder(Number(folderId));
+    } else {
+      loadDocuments();
+    }
+  }, [folderId]);
 
   const handleSearch = (q: string) => {
     setSearchQuery(q);
@@ -65,7 +74,13 @@ export default function DashboardScreen() {
     setShowCaptureModal(false);
     const images = await startSmartScan();
     if (images?.length) {
-      router.push({ pathname: '/capture-preview', params: { imagePaths: JSON.stringify(images) } });
+      router.push({ 
+        pathname: '/capture-preview', 
+        params: { 
+          imagePaths: JSON.stringify(images),
+          folderId: folderId || undefined
+        } 
+      });
     }
   };
 
@@ -73,7 +88,13 @@ export default function DashboardScreen() {
     setShowCaptureModal(false);
     const images = await pickFromGallery();
     if (images?.length) {
-      router.push({ pathname: '/capture-preview', params: { imagePaths: JSON.stringify(images) } });
+      router.push({ 
+        pathname: '/capture-preview', 
+        params: { 
+          imagePaths: JSON.stringify(images),
+          folderId: folderId || undefined
+        } 
+      });
     }
   };
 
@@ -93,10 +114,19 @@ export default function DashboardScreen() {
             {/* Editorial Header */}
             <View style={styles.header}>
               <Text style={[Typography.headlineLarge, { color: theme.colors.onSurface, lineHeight: 40 }]}>
-                {t('editorialHeaderPart1')}
-                <Text style={{ color: theme.isDark ? Colors.primary : Colors.indigoAccent }}>
-                  {t('editorialHeaderPart2')}
-                </Text>
+                {currentFolder ? (
+                  <>
+                    <Text style={{ color: theme.colors.onSurfaceVariant }}>{t('folders')} / </Text>
+                    {currentFolder.name}
+                  </>
+                ) : (
+                  <>
+                    {t('editorialHeaderPart1')}
+                    <Text style={{ color: theme.isDark ? Colors.primary : Colors.indigoAccent }}>
+                      {t('editorialHeaderPart2')}
+                    </Text>
+                  </>
+                )}
               </Text>
             </View>
 

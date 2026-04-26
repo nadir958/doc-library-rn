@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   createBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 14 },
   grid: { paddingHorizontal: Spacing.lg, paddingBottom: 140 },
   gridRow: { gap: 16 },
-  gridItem: { flex: 1 },
+  gridItem: { flex: 1, maxWidth: '50%' },
   fabWrapper: {
     position: 'absolute',
     right: Spacing.lg + 16,
