@@ -27,7 +27,7 @@ export default function CapturePreviewScreen() {
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
-  const [docTitle, setDocTitle] = useState('');
+  const [docTitle, setDocTitle] = useState(`Scan du ${new Date().getDate()}/${new Date().getMonth() + 1}`);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -40,15 +40,21 @@ export default function CapturePreviewScreen() {
     if (params.imagePaths) {
       try {
         const paths = JSON.parse(params.imagePaths);
-        setImages(paths);
-        // Lancer l'IA sur la première image
-        if (paths.length > 0) {
-          runAiAnalysis(paths[0]);
+        if (Array.isArray(paths)) {
+          setImages(paths);
+          // Lancer l'IA avec un léger délai pour ne pas bloquer le rendu initial
+          if (paths.length > 0) {
+            setTimeout(() => {
+              runAiAnalysis(paths[0]);
+            }, 500);
+          }
         }
-      } catch {}
+      } catch (e) {
+        console.error('Failed to parse image paths:', e);
+      }
     }
     loadFolders();
-  }, []);
+  }, [params.imagePaths]);
 
   const runAiAnalysis = async (imagePath: string) => {
     setIsAiLoading(true);

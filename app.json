@@ -64,7 +64,9 @@
           "faceIDPermission": "Doc Library uses Face ID to protect your documents."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "@react-native-ml-kit/text-recognition",
+      "react-native-document-scanner-plugin"
     ],
     "extra": {
       "router": {},
