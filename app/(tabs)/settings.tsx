@@ -11,6 +11,7 @@ import { Colors, Radius, Spacing, Typography } from '../../src/theme/colors';
 import { useSettingsStore, ThemeMode, AppLocale } from '../../src/store/settingsStore';
 import { useDocumentStore } from '../../src/store/documentStore';
 import { useFolderStore } from '../../src/store/folderStore';
+import { useAuthStore } from '../../src/store/authStore';
 import * as db from '../../src/services/databaseService';
 import { i18n } from '../../src/i18n';
 
@@ -20,6 +21,7 @@ export default function SettingsScreen() {
   const { themeMode, locale, isBiometricEnabled, setThemeMode, setLocale, setBiometricEnabled } = useSettingsStore();
   const { loadDocuments } = useDocumentStore();
   const { loadFolders } = useFolderStore();
+  const { authenticate, reset: resetAuth } = useAuthStore();
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -43,6 +45,20 @@ export default function SettingsScreen() {
     await loadDocuments();
     await loadFolders();
     setShowDeleteModal(false);
+  };
+
+  const handleToggleBiometrics = async (value: boolean) => {
+    if (value) {
+      // Si on active, on demande une authentification immédiate pour confirmer
+      const success = await authenticate();
+      if (success) {
+        setBiometricEnabled(true);
+      }
+    } else {
+      // Si on désactive, on remet aussi l'état auth à false pour la sécurité
+      setBiometricEnabled(false);
+      resetAuth();
+    }
   };
 
   return (
@@ -83,7 +99,7 @@ export default function SettingsScreen() {
             </View>
             <Switch
               value={isBiometricEnabled}
-              onValueChange={setBiometricEnabled}
+              onValueChange={handleToggleBiometrics}
               trackColor={{ true: theme.colors.secondary, false: theme.colors.surfaceVariant }}
               thumbColor="#fff"
             />
