@@ -56,29 +56,29 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, onPress, onLongP
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: Radius.xxl,
+    borderRadius: Radius.xl,
     borderWidth: 1,
-    padding: Spacing.lg,
+    padding: Spacing.md,
     justifyContent: 'space-between',
-    aspectRatio: 0.9,
+    aspectRatio: 1,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 4,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: Radius.md,
     backgroundColor: `${Colors.amber}1A`,
     justifyContent: 'center',
     alignItems: 'center',
   },
   bottom: {
-    gap: 4,
+    gap: 2,
   },
   name: {
-    ...Typography.titleMedium,
+    ...Typography.titleSmall,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   viewText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,
   },
