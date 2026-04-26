@@ -19,7 +19,7 @@ interface DocumentActions {
   filterByFolder: (folderId: number | null) => Promise<void>;
   deleteDocument: (id: number) => Promise<void>;
   updateMetadata: (id: number, updates: { title?: string; tags?: string[]; folderId?: number | null }) => Promise<void>;
-  processCapture: (imagePaths: string[], options?: { folderId?: number }) => Promise<void>;
+  processCapture: (imagePaths: string[], options?: { folderId?: number; title?: string }) => Promise<void>;
   addPagesToDocument: (docId: number, imagePaths: string[]) => Promise<void>;
   refreshTags: () => Promise<void>;
 }
@@ -116,7 +116,8 @@ export const useDocumentStore = create<DocumentState & DocumentActions>((set, ge
 
       const fullOcrText = pages.map(p => p.ocrText).join('\n');
       const now = new Date();
-      const title = `Scan du ${now.getDate()}/${now.getMonth() + 1}`;
+      const defaultTitle = `Scan du ${now.getDate()}/${now.getMonth() + 1}`;
+      const title = options.title || defaultTitle;
 
       const newDoc = {
         title,

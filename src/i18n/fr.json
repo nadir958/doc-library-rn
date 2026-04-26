@@ -62,5 +62,7 @@
   "unlockApp": "Déverrouiller",
   "authRequiredDescription": "Veuillez vous authentifier pour accéder à vos documents",
   "foldersSubtitle": "Organisez vos documents sensibles dans des coffres chiffrés.",
-  "createFirstFolder": "Créez votre premier dossier pour organiser vos scans."
+  "createFirstFolder": "Créez votre premier dossier pour organiser vos scans.",
+  "documentTitle": "Titre du document",
+  "aiSuggestions": "Suggestions IA"
 }

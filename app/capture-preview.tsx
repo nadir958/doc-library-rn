@@ -12,6 +12,8 @@ import { Colors, Radius, Spacing, Typography } from '../src/theme/colors';
 import { useDocumentStore } from '../src/store/documentStore';
 import { useFolderStore } from '../src/store/folderStore';
 import { GradientButton } from '../src/components/GradientButton';
+import { getSuggestedFolderNames } from '../src/services/aiService';
+import { recognizeText } from '../src/services/ocrService';
 
 export default function CapturePreviewScreen() {
   const params = useLocalSearchParams<{ imagePaths: string; existingDocId?: string }>();
@@ -25,6 +27,9 @@ export default function CapturePreviewScreen() {
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [docTitle, setDocTitle] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const { processCapture, addPagesToDocument, isLoading } = useDocumentStore();
   const { folders, loadFolders, createFolder } = useFolderStore();
@@ -34,11 +39,32 @@ export default function CapturePreviewScreen() {
   useEffect(() => {
     if (params.imagePaths) {
       try {
-        setImages(JSON.parse(params.imagePaths));
+        const paths = JSON.parse(params.imagePaths);
+        setImages(paths);
+        // Lancer l'IA sur la première image
+        if (paths.length > 0) {
+          runAiAnalysis(paths[0]);
+        }
       } catch {}
     }
     loadFolders();
   }, []);
+
+  const runAiAnalysis = async (imagePath: string) => {
+    setIsAiLoading(true);
+    try {
+      const text = await recognizeText(imagePath);
+      const hints = await getSuggestedFolderNames(text);
+      setSuggestions(hints);
+      if (hints.length > 0 && !docTitle) {
+        setDocTitle(hints[0]);
+      }
+    } catch (e) {
+      console.error('AI Error:', e);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     navigation.setOptions({
@@ -51,7 +77,10 @@ export default function CapturePreviewScreen() {
     if (existingDocId) {
       await addPagesToDocument(existingDocId, images);
     } else {
-      await processCapture(images, { folderId: selectedFolderId ?? undefined });
+      await processCapture(images, { 
+        folderId: selectedFolderId ?? undefined,
+        title: docTitle.trim() || undefined
+      });
     }
     router.back();
   };
@@ -106,6 +135,42 @@ export default function CapturePreviewScreen() {
       }]}>
         {!existingDocId && (
           <>
+            {/* Title Input */}
+            <View style={[styles.inputContainer, { backgroundColor: `${theme.colors.onSurface}0D` }]}>
+              <Ionicons name="document-text-outline" size={20} color={theme.colors.primary} />
+              <TextInput
+                style={[styles.titleInput, { color: theme.colors.onSurface }]}
+                placeholder={t('documentTitle')}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
+                value={docTitle}
+                onChangeText={setDocTitle}
+              />
+            </View>
+
+            {/* AI Suggestions */}
+            {(suggestions.length > 0 || isAiLoading) && (
+              <View style={styles.suggestionRow}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {isAiLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginLeft: 8 }} />
+                  ) : (
+                    suggestions.map((s, i) => (
+                      <TouchableOpacity
+                        key={i}
+                        onPress={() => setDocTitle(s)}
+                        style={[styles.suggestionChip, { backgroundColor: `${theme.colors.primary}1A` }]}
+                      >
+                        <Ionicons name="sparkles" size={12} color={theme.colors.primary} />
+                        <Text style={[styles.suggestionText, { color: theme.colors.primary }]}>{s}</Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
+            )}
+
+            <View style={{ height: Spacing.md }} />
+
             <View style={styles.folderRow}>
               <TouchableOpacity
                 style={[styles.folderPicker, { backgroundColor: `${theme.colors.onSurface}0D` }]}
@@ -240,4 +305,34 @@ const styles = StyleSheet.create({
   input: { padding: 12, borderRadius: Radius.md, marginBottom: Spacing.lg, fontSize: 15, fontFamily: 'Inter_400Regular' },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.md, alignItems: 'center' },
   createBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.md },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.sm,
+  },
+  titleInput: {
+    flex: 1,
+    height: 50,
+    marginLeft: 10,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+  },
+  suggestionRow: {
+    paddingVertical: 4,
+  },
+  suggestionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    marginRight: 8,
+    gap: 4,
+  },
+  suggestionText: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 12,
+  },
 });

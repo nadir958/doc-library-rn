@@ -62,5 +62,7 @@
   "unlockApp": "Unlock",
   "authRequiredDescription": "Please authenticate to access your documents",
   "foldersSubtitle": "Organize your sensitive documents in encrypted vaults.",
-  "createFirstFolder": "Create your first folder to organize your scans."
+  "createFirstFolder": "Create your first folder to organize your scans.",
+  "documentTitle": "Document title",
+  "aiSuggestions": "AI Suggestions"
 }
