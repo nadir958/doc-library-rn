@@ -42,6 +42,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (locale) {
       i18n.changeLanguage(locale);
+    } else {
+      // Si locale est null (Mode Système), on récupère la langue de l'appareil
+      const { getSystemLocale } = require('../src/i18n');
+      i18n.changeLanguage(getSystemLocale());
     }
   }, [locale]);
 

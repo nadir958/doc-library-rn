@@ -55,7 +55,7 @@ export default function FoldersScreen() {
         <View>
           <Text style={[Typography.headlineLarge, { color: theme.colors.onSurface }]}>{t('folders')}</Text>
           <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
-            Organisez vos documents sensibles dans des coffres chiffrés.
+            {t('foldersSubtitle')}
           </Text>
         </View>
         <TouchableOpacity
@@ -77,7 +77,7 @@ export default function FoldersScreen() {
             {t('noDocuments').toUpperCase()}
           </Text>
           <Text style={[styles.emptySubtitle, { color: `${theme.colors.onSurface}66` }]}>
-            Créez votre premier dossier pour organiser vos scans.
+            {t('createFirstFolder')}
           </Text>
           <TouchableOpacity onPress={() => setShowAddModal(true)}>
             <LinearGradient
@@ -123,7 +123,7 @@ export default function FoldersScreen() {
 
       {/* Add Folder Modal */}
       <Modal transparent visible={showAddModal} animationType="fade" onRequestClose={() => setShowAddModal(false)}>
-        <Pressable style={styles.overlay} onPress={() => setShowAddModal(false)}>
+        <Pressable style={styles.overlayCenter} onPress={() => setShowAddModal(false)}>
           <Pressable style={[styles.dialog, { backgroundColor: theme.colors.surface }]}>
             <Text style={[Typography.titleLarge, { color: theme.colors.onSurface, marginBottom: Spacing.md }]}>
               {t('newFolder')}
@@ -159,7 +159,7 @@ export default function FoldersScreen() {
             <View style={styles.handle} />
             <TouchableOpacity style={styles.sheetItem} onPress={handleSmartScan}>
               <Ionicons name="sparkles" size={24} color={Colors.amber} />
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={[styles.sheetItemTitle, { color: theme.colors.onSurface }]}>{t('smartScan')}</Text>
                 <Text style={[styles.sheetItemSub, { color: theme.colors.onSurfaceVariant }]}>{t('smartScanDesc')}</Text>
               </View>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   fabWrapper: {
     position: 'absolute',
     right: Spacing.lg + 16,
-    bottom: 110,
+    bottom: 140,
     shadowColor: Colors.primaryContainer,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
@@ -214,7 +214,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   fab: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  overlayCenter: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
   dialog: { width: '85%', borderRadius: Radius.xxl, padding: Spacing.lg },
   input: { padding: Spacing.md, fontSize: 15, marginBottom: Spacing.lg, fontFamily: 'Inter_400Regular' },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.md, alignItems: 'center' },

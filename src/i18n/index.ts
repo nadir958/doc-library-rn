@@ -5,7 +5,10 @@ import fr from './fr.json';
 import en from './en.json';
 import ar from './ar.json';
 
-const systemLocale = getLocales()[0]?.languageCode ?? 'fr';
+export const getSystemLocale = (): string => {
+  const locales = getLocales();
+  return locales[0]?.languageCode ?? 'fr';
+};
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -13,7 +16,7 @@ i18n.use(initReactI18next).init({
     en: { translation: en },
     ar: { translation: ar },
   },
-  lng: systemLocale,
+  lng: getSystemLocale(),
   fallbackLng: 'fr',
   interpolation: { escapeValue: false },
   compatibilityJSON: 'v4',

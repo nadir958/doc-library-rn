@@ -184,7 +184,7 @@ export default function DashboardScreen() {
       />
 
       {/* FAB */}
-      <View style={[styles.fabWrapper, { bottom: 110 }]}>
+      <View style={[styles.fabWrapper, { bottom: 140 }]}>
         <TouchableOpacity onPress={() => setShowCaptureModal(true)} activeOpacity={0.85}>
           <LinearGradient
             colors={theme.isDark ? Colors.gradient.primary : Colors.gradient.primaryLight}

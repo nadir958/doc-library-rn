@@ -1,19 +1,22 @@
-// Miroir de OCRService.dart
-// Note: ML Kit text recognition nécessite un development build.
-// On expose une interface simple pour que l'intégration soit facile.
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 
-// Retourne le texte extrait depuis une image locale
+/**
+ * Reconnaissance de texte via Google ML Kit (On-Device)
+ * @param imageUri Chemin local de l'image (file://)
+ * @returns Texte extrait
+ * 
+ * IMPORTANT: Nécessite un "Development Build" (npx expo run:android)
+ * Ne fonctionne pas dans Expo Go car ML Kit contient du code natif.
+ */
 export async function recognizeText(imageUri: string): Promise<string> {
+  if (!imageUri) return '';
+  
   try {
-    // En mode development build avec @react-native-ml-kit/text-recognition:
-    // const TextRecognition = require('@react-native-ml-kit/text-recognition').default;
-    // const result = await TextRecognition.recognize(imageUri);
-    // return result.text;
-
-    // Placeholder pour tests initiaux (peut être remplacé après installation ML Kit)
-    return '';
+    const result = await TextRecognition.recognize(imageUri);
+    return result.text || '';
   } catch (e) {
-    console.error('Erreur OCR:', e);
+    console.error('Erreur OCR ML Kit:', e);
+    // Fallback silencieux pour ne pas bloquer l'importation
     return '';
   }
 }

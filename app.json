@@ -63,7 +63,8 @@
         {
           "faceIDPermission": "Doc Library uses Face ID to protect your documents."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "extra": {
       "router": {},

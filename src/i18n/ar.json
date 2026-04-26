@@ -60,5 +60,7 @@
   "selectTheme": "اختر المظهر",
   "appLocked": "التطبيق مقفل",
   "unlockApp": "فتح القفل",
-  "authRequiredDescription": "يرجى المصادقة للوصول إلى مستنداتك"
+  "authRequiredDescription": "يرجى المصادقة للوصول إلى مستنداتك",
+  "foldersSubtitle": "نظم مستنداتك الحساسة في خزائن مشفرة.",
+  "createFirstFolder": "قم بإنشاء مجلدك الأول لتنظيم مسوحاتك."
 }

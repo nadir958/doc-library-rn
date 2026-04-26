@@ -60,5 +60,7 @@
   "selectTheme": "Select theme",
   "appLocked": "App Locked",
   "unlockApp": "Unlock",
-  "authRequiredDescription": "Please authenticate to access your documents"
+  "authRequiredDescription": "Please authenticate to access your documents",
+  "foldersSubtitle": "Organize your sensitive documents in encrypted vaults.",
+  "createFirstFolder": "Create your first folder to organize your scans."
 }
