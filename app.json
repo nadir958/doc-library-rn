@@ -65,7 +65,6 @@
         }
       ],
       "expo-localization",
-      
       "react-native-document-scanner-plugin"
     ],
     "extra": {

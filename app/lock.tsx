@@ -18,13 +18,16 @@ export default function LockScreen() {
 
   // Auto-authenticate on mount
   useEffect(() => {
-    handleAuthenticate();
+    const timer = setTimeout(() => {
+      handleAuthenticate();
+    }, 400); // Délai pour laisser l'écran se dessiner et éviter un freeze UI
+    return () => clearTimeout(timer);
   }, []);
 
   // Navigate when authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/(tabs)/');
+      router.replace('/');
     }
   }, [isAuthenticated]);
 
