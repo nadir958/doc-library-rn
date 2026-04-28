@@ -39,6 +39,37 @@ export default function DocumentDetailScreen() {
 
   const { updateMetadata, deleteDocument } = useDocumentStore();
 
+  useLayoutEffect(() => {
+    if (!document) return;
+    navigation.setOptions({
+      title: isEditing ? '' : (document?.title ?? ''),
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={isEditing ? handleSave : () => setIsEditing(true)}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            activeOpacity={0.7}
+          >
+            <Ionicons 
+              name={isEditing ? 'checkmark-circle' : 'pencil-outline'} 
+              size={24} 
+              color={theme.colors.primary} 
+            />
+          </TouchableOpacity>
+          {!isEditing && (
+            <TouchableOpacity 
+              onPress={() => setShowMoreActions(true)}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="ellipsis-vertical" size={24} color={theme.colors.onSurface} />
+            </TouchableOpacity>
+          )}
+        </View>
+      ),
+    });
+  }, [navigation, isEditing, document, theme, t, showMoreActions]);
+
   const loadData = async () => {
     setLoading(true);
     const docs = await db.getAllDocuments();
@@ -140,36 +171,6 @@ export default function DocumentDetailScreen() {
   if (!document) return null;
 
   const date = new Date(document.createdAt);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: isEditing ? '' : (document?.title ?? ''),
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }}>
-          <TouchableOpacity 
-            onPress={isEditing ? handleSave : () => setIsEditing(true)}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name={isEditing ? 'checkmark-circle' : 'pencil-outline'} 
-              size={24} 
-              color={theme.colors.primary} 
-            />
-          </TouchableOpacity>
-          {!isEditing && (
-            <TouchableOpacity 
-              onPress={() => setShowMoreActions(true)}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="ellipsis-vertical" size={24} color={theme.colors.onSurface} />
-            </TouchableOpacity>
-          )}
-        </View>
-      ),
-    });
-  }, [navigation, isEditing, document, theme, t, showMoreActions]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
