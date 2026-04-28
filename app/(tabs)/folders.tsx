@@ -22,13 +22,16 @@ export default function FoldersScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCaptureModal, setShowCaptureModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [newFolderTags, setNewFolderTags] = useState('');
 
   useEffect(() => { loadFolders(); }, []);
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
-    await createFolder(newFolderName.trim());
+    const tags = newFolderTags.split(',').map(t => t.trim()).filter(t => t);
+    await createFolder(newFolderName.trim(), tags);
     setNewFolderName('');
+    setNewFolderTags('');
     setShowAddModal(false);
   };
 
@@ -139,6 +142,18 @@ export default function FoldersScreen() {
               value={newFolderName}
               onChangeText={setNewFolderName}
               autoFocus
+            />
+            <TextInput
+              style={[styles.input, {
+                backgroundColor: `${theme.colors.onSurface}0D`,
+                color: theme.colors.onSurface,
+                borderRadius: Radius.lg,
+                marginTop: -Spacing.sm,
+              }]}
+              placeholder={t('tags') + ' (ex: urgent, facture)'}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+              value={newFolderTags}
+              onChangeText={setNewFolderTags}
             />
             <View style={styles.dialogActions}>
               <TouchableOpacity onPress={() => setShowAddModal(false)}>

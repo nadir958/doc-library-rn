@@ -9,7 +9,7 @@ interface FolderState {
 
 interface FolderActions {
   loadFolders: () => Promise<void>;
-  createFolder: (name: string) => Promise<number>;
+  createFolder: (name: string, tags?: string[]) => Promise<number>;
   deleteFolder: (id: number) => Promise<void>;
 }
 
@@ -27,8 +27,8 @@ export const useFolderStore = create<FolderState & FolderActions>((set) => ({
     }
   },
 
-  createFolder: async (name) => {
-    const id = await db.createFolder(name);
+  createFolder: async (name, tags = []) => {
+    const id = await db.createFolder(name, tags);
     const folders = await db.getAllFolders();
     set({ folders });
     return id;

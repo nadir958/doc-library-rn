@@ -46,6 +46,12 @@ export async function initDatabase(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_pages_document_id ON pages(document_id);
     CREATE INDEX IF NOT EXISTS idx_pages_order ON pages(sort_order);
   `);
+
+  try {
+    await db.execAsync('ALTER TABLE folders ADD COLUMN tags TEXT NOT NULL DEFAULT "[]"');
+  } catch (e) {
+    // Column might already exist, ignore
+  }
 }
 
 // ======= FOLDERS =======
@@ -56,12 +62,13 @@ export async function getAllFolders(): Promise<FolderModel[]> {
   return rows.map(rowToFolder);
 }
 
-export async function createFolder(name: string): Promise<number> {
+export async function createFolder(name: string, tags: string[] = []): Promise<number> {
   const db = await getDb();
   const result = await db.runAsync(
-    'INSERT INTO folders (name, created_at) VALUES (?, ?)',
+    'INSERT INTO folders (name, created_at, tags) VALUES (?, ?, ?)',
     name,
-    new Date().toISOString()
+    new Date().toISOString(),
+    JSON.stringify(tags)
   );
   return result.lastInsertRowId;
 }
@@ -203,7 +210,12 @@ export async function getAllTags(): Promise<string[]> {
 // ======= Row mappers =======
 
 function rowToFolder(row: any): FolderModel {
-  return { id: row.id, name: row.name, createdAt: row.created_at };
+  return { 
+    id: row.id, 
+    name: row.name, 
+    createdAt: row.created_at,
+    tags: (() => { try { return row.tags ? JSON.parse(row.tags) : []; } catch { return []; } })(),
+  };
 }
 
 function rowToDocument(row: any): DocumentModel {

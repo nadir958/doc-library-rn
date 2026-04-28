@@ -31,11 +31,22 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, onPress, onLongP
       ]}
     >
       {/* Folder Icon */}
-      <View style={styles.iconContainer}>
-        <Ionicons name="folder" size={32} color={Colors.amber} />
+      <View style={styles.topSection}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="folder" size={32} color={Colors.amber} />
+        </View>
+        {folder.tags && folder.tags.length > 0 && (
+          <View style={styles.tagsContainer}>
+            {folder.tags.slice(0, 2).map((tag, idx) => (
+              <View key={idx} style={[styles.tagBadge, { backgroundColor: `${theme.colors.primary}1A` }]}>
+                <Text style={[styles.tagText, { color: theme.colors.primary }]} numberOfLines={1}>
+                  {tag}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
-
-      {/* Spacer */}
       <View style={styles.bottom}>
         <Text
           style={[styles.name, { color: theme.colors.onSurface }]}
@@ -73,6 +84,25 @@ const styles = StyleSheet.create({
     backgroundColor: `${Colors.amber}1A`,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  topSection: {
+    gap: Spacing.sm,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginTop: 4,
+  },
+  tagBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: Radius.sm,
+    maxWidth: 70,
+  },
+  tagText: {
+    fontSize: 8,
+    fontWeight: '700',
   },
   bottom: {
     gap: 2,

@@ -6,6 +6,7 @@ export interface FolderModel {
   id: number;
   name: string;
   createdAt: string; // ISO string
+  tags?: string[];
 }
 
 export interface DocumentModel {

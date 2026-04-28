@@ -15,6 +15,7 @@ import { useDocumentStore } from '../../src/store/documentStore';
 import { generateAndSharePdf } from '../../src/services/exportService';
 import { pickFromGallery, startSmartScan } from '../../src/services/scanService';
 import { GradientButton } from '../../src/components/GradientButton';
+import ImageViewing from 'react-native-image-viewing';
 
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -33,6 +34,8 @@ export default function DocumentDetailScreen() {
   const [showAddTag, setShowAddTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [showAddPage, setShowAddPage] = useState(false);
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { updateMetadata, deleteDocument } = useDocumentStore();
 
@@ -123,6 +126,11 @@ export default function DocumentDetailScreen() {
     }
   };
 
+  const handleOpenImage = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsImageViewerVisible(true);
+  };
+
   if (loading) return (
     <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
       <ActivityIndicator color={theme.colors.primary} />
@@ -178,7 +186,7 @@ export default function DocumentDetailScreen() {
             <Text style={{ color: `${theme.colors.onSurface}33`, marginTop: 16 }}>{t('noPages')}</Text>
           </View>
         ) : (
-          pages.map(page => (
+          pages.map((page, index) => (
             <ImmersivePage
               key={page.id}
               page={page}
@@ -186,6 +194,7 @@ export default function DocumentDetailScreen() {
               theme={theme}
               onDelete={() => handleDeletePage(page.id)}
               onUpdateNotes={(notes: string) => handleUpdateNotes(page.id, notes)}
+              onImagePress={() => handleOpenImage(index)}
               t={t}
             />
           ))
@@ -305,18 +314,30 @@ export default function DocumentDetailScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {/* Image Viewer (Zoom) */}
+      <ImageViewing
+        images={pages.map(p => ({ uri: p.imagePath }))}
+        imageIndex={currentImageIndex}
+        visible={isImageViewerVisible}
+        onRequestClose={() => setIsImageViewerVisible(false)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
+      />
     </View>
   );
 }
 
-function ImmersivePage({ page, isEditing, theme, onDelete, onUpdateNotes, t }: any) {
+function ImmersivePage({ page, isEditing, theme, onDelete, onUpdateNotes, onImagePress, t }: any) {
   const [notes, setNotes] = useState<string>(page.notes ?? '');
 
   return (
     <View style={styles.pageBlock}>
       {/* Image */}
       <View style={styles.imageContainer}>
-        <Image source={{ uri: page.imagePath }} style={styles.pageImage} resizeMode="contain" />
+        <TouchableOpacity activeOpacity={0.9} onPress={onImagePress} style={{ flex: 1 }}>
+          <Image source={{ uri: page.imagePath }} style={styles.pageImage} resizeMode="contain" />
+        </TouchableOpacity>
 
         {/* Zoom hint — simplified, pinch-to-zoom native */}
         <View style={[styles.integrityBadge, { backgroundColor: Colors.overlay }]}>
