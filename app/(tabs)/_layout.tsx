@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsStore } from '../../src/store/settingsStore';
 import { useAuthStore } from '../../src/store/authStore';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { useEffect } from 'react';
 
 export default function TabsLayout() {
@@ -20,11 +20,9 @@ export default function TabsLayout() {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
-  useEffect(() => {
-    if (isBiometricEnabled && !isAuthenticated) {
-      router.replace('/lock');
-    }
-  }, [isBiometricEnabled, isAuthenticated]);
+  if (isBiometricEnabled && !isAuthenticated) {
+    return <Redirect href="/lock" />;
+  }
 
   return (
     <Tabs

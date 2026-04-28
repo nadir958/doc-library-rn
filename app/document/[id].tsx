@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, Image, TouchableOpacity, TextInput,
   StyleSheet, Alert, Modal, Pressable, ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -52,23 +52,7 @@ export default function DocumentDetailScreen() {
 
   useEffect(() => { loadData(); }, [id]);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: isEditing ? '' : (document?.title ?? ''),
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>
-          <TouchableOpacity onPress={isEditing ? handleSave : () => setIsEditing(true)}>
-            <Ionicons name={isEditing ? 'checkmark' : 'pencil-outline'} size={22} color={theme.colors.primary} />
-          </TouchableOpacity>
-          {!isEditing && (
-            <TouchableOpacity onPress={() => setShowMoreActions(true)}>
-              <Ionicons name="ellipsis-vertical" size={22} color={theme.colors.onSurface} />
-            </TouchableOpacity>
-          )}
-        </View>
-      ),
-    });
-  }, [isEditing, document, title, tags, theme]);
+
 
   const handleSave = async () => {
     if (!document) return;
@@ -151,6 +135,23 @@ export default function DocumentDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Stack.Screen 
+        options={{
+          title: isEditing ? '' : (document?.title ?? ''),
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', gap: 8, marginRight: 4 }}>
+              <TouchableOpacity onPress={isEditing ? handleSave : () => setIsEditing(true)}>
+                <Ionicons name={isEditing ? 'checkmark' : 'pencil-outline'} size={22} color={theme.colors.primary} />
+              </TouchableOpacity>
+              {!isEditing && (
+                <TouchableOpacity onPress={() => setShowMoreActions(true)}>
+                  <Ionicons name="ellipsis-vertical" size={22} color={theme.colors.onSurface} />
+                </TouchableOpacity>
+              )}
+            </View>
+          ),
+        }} 
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Breadcrumb */}
         <TouchableOpacity onPress={() => router.back()} style={styles.breadcrumb}>
@@ -240,7 +241,7 @@ export default function DocumentDetailScreen() {
       {/* More Actions Modal */}
       <Modal transparent visible={showMoreActions} animationType="slide" onRequestClose={() => setShowMoreActions(false)}>
         <Pressable style={styles.overlay} onPress={() => setShowMoreActions(false)}>
-          <Pressable style={[styles.sheet, { backgroundColor: '#191F2F' }]}>
+          <View style={[styles.sheet, { backgroundColor: '#191F2F' }]} onStartShouldSetResponder={() => true}>
             <View style={styles.handle} />
             <TouchableOpacity style={styles.sheetItem} onPress={handleSharePdf}>
               <Ionicons name="share-outline" size={24} color={theme.colors.onSurface} />
@@ -250,14 +251,14 @@ export default function DocumentDetailScreen() {
               <Ionicons name="trash-outline" size={24} color={Colors.red} />
               <Text style={[styles.sheetItemTitle, { color: Colors.red }]}>{t('deleteDocument')}</Text>
             </TouchableOpacity>
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
 
       {/* Add Tag Modal */}
       <Modal transparent visible={showAddTag} animationType="fade" onRequestClose={() => setShowAddTag(false)}>
         <Pressable style={styles.overlay} onPress={() => setShowAddTag(false)}>
-          <Pressable style={[styles.dialog, { backgroundColor: theme.colors.surface }]}>
+          <View style={[styles.dialog, { backgroundColor: theme.colors.surface }]} onStartShouldSetResponder={() => true}>
             <Text style={[Typography.titleMedium, { color: theme.colors.onSurface, marginBottom: Spacing.md }]}>{t('addTag')}</Text>
             <TextInput
               style={[styles.dialogInput, { backgroundColor: `${theme.colors.onSurface}0D`, color: theme.colors.onSurface }]}
@@ -281,14 +282,14 @@ export default function DocumentDetailScreen() {
                 <Text style={{ color: theme.isDark ? Colors.background : '#fff', fontWeight: '700' }}>{t('add')}</Text>
               </TouchableOpacity>
             </View>
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
 
       {/* Add Page Modal */}
       <Modal transparent visible={showAddPage} animationType="slide" onRequestClose={() => setShowAddPage(false)}>
         <Pressable style={styles.overlay} onPress={() => setShowAddPage(false)}>
-          <Pressable style={[styles.sheet, { backgroundColor: '#1E293B' }]}>
+          <View style={[styles.sheet, { backgroundColor: '#1E293B' }]} onStartShouldSetResponder={() => true}>
             <View style={styles.handle} />
             <TouchableOpacity style={styles.sheetItem} onPress={handleAddPagesScan}>
               <Ionicons name="sparkles" size={24} color={Colors.amber} />
@@ -301,7 +302,7 @@ export default function DocumentDetailScreen() {
               <Ionicons name="images" size={24} color={Colors.orange} />
               <Text style={[styles.sheetItemTitle, { color: theme.colors.onSurface }]}>{t('fromGallery')}</Text>
             </TouchableOpacity>
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </View>

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -25,11 +25,9 @@ export default function LockScreen() {
   }, []);
 
   // Navigate when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/');
-    }
-  }, [isAuthenticated]);
+  if (isAuthenticated) {
+    return <Redirect href="/" />;
+  }
 
   const handleAuthenticate = async () => {
     await authenticate();
