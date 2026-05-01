@@ -1,4 +1,6 @@
-import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { Platform } from 'react-native';
+
+type TextRecognitionModule = typeof import('@react-native-ml-kit/text-recognition').default;
 
 /**
  * Reconnaissance de texte via Google ML Kit (On-Device)
@@ -10,8 +12,10 @@ import TextRecognition from '@react-native-ml-kit/text-recognition';
  */
 export async function recognizeText(imageUri: string): Promise<string> {
   if (!imageUri) return '';
+  if (Platform.OS === 'web') return '';
   
   try {
+    const TextRecognition = require('@react-native-ml-kit/text-recognition').default as TextRecognitionModule;
     const result = await TextRecognition.recognize(imageUri);
     return result.text || '';
   } catch (e) {

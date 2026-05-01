@@ -1,20 +1,29 @@
-import * as SQLite from 'expo-sqlite';
+import { Platform } from 'react-native';
 import { DocumentModel, FolderModel, NewDocument, NewFolder, NewPage, PageModel } from '../types/models';
 
 // ============================================
 // DATABASE SERVICE — Miroir des Repositories Dart
 // ============================================
 
-let _db: SQLite.SQLiteDatabase | null = null;
+type SQLiteModule = typeof import('expo-sqlite');
+type SQLiteDatabase = Awaited<ReturnType<SQLiteModule['openDatabaseAsync']>>;
 
-async function getDb(): Promise<SQLite.SQLiteDatabase> {
+const webDb = Platform.OS === 'web'
+  ? require('./databaseService.web') as typeof import('./databaseService.web')
+  : null;
+
+let _db: SQLiteDatabase | null = null;
+
+async function getDb(): Promise<SQLiteDatabase> {
   if (_db) return _db;
+  const SQLite = require('expo-sqlite') as SQLiteModule;
   _db = await SQLite.openDatabaseAsync('doc_library.db');
   await _db.execAsync('PRAGMA journal_mode = WAL;');
   return _db;
 }
 
 export async function initDatabase(): Promise<void> {
+  if (webDb) return webDb.initDatabase();
   const db = await getDb();
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS folders (
@@ -57,12 +66,14 @@ export async function initDatabase(): Promise<void> {
 // ======= FOLDERS =======
 
 export async function getAllFolders(): Promise<FolderModel[]> {
+  if (webDb) return webDb.getAllFolders();
   const db = await getDb();
   const rows = await db.getAllAsync<any>('SELECT * FROM folders ORDER BY created_at DESC');
   return rows.map(rowToFolder);
 }
 
 export async function createFolder(name: string, tags: string[] = []): Promise<number> {
+  if (webDb) return webDb.createFolder(name, tags);
   const db = await getDb();
   const result = await db.runAsync(
     'INSERT INTO folders (name, created_at, tags) VALUES (?, ?, ?)',
@@ -74,6 +85,7 @@ export async function createFolder(name: string, tags: string[] = []): Promise<n
 }
 
 export async function deleteFolder(id: number): Promise<void> {
+  if (webDb) return webDb.deleteFolder(id);
   const db = await getDb();
   await db.runAsync('DELETE FROM folders WHERE id = ?', id);
 }
@@ -81,12 +93,24 @@ export async function deleteFolder(id: number): Promise<void> {
 // ======= DOCUMENTS =======
 
 export async function getAllDocuments(): Promise<DocumentModel[]> {
+  if (webDb) return webDb.getAllDocuments();
   const db = await getDb();
   const rows = await db.getAllAsync<any>('SELECT * FROM documents ORDER BY created_at DESC');
   return rows.map(rowToDocument);
 }
 
+export async function getDocumentById(id: number): Promise<DocumentModel | null> {
+  if (webDb) return webDb.getDocumentById(id);
+  const db = await getDb();
+  const row = await db.getFirstAsync<any>(
+    'SELECT * FROM documents WHERE id = ? LIMIT 1',
+    id
+  );
+  return row ? rowToDocument(row) : null;
+}
+
 export async function searchDocuments(query: string): Promise<DocumentModel[]> {
+  if (webDb) return webDb.searchDocuments(query);
   const db = await getDb();
   const q = `%${query}%`;
   const rows = await db.getAllAsync<any>(
@@ -97,6 +121,7 @@ export async function searchDocuments(query: string): Promise<DocumentModel[]> {
 }
 
 export async function filterDocumentsByTag(tag: string): Promise<DocumentModel[]> {
+  if (webDb) return webDb.filterDocumentsByTag(tag);
   const db = await getDb();
   const rows = await db.getAllAsync<any>(
     "SELECT * FROM documents WHERE tags LIKE ? ORDER BY created_at DESC",
@@ -106,6 +131,7 @@ export async function filterDocumentsByTag(tag: string): Promise<DocumentModel[]
 }
 
 export async function filterDocumentsByFolder(folderId: number): Promise<DocumentModel[]> {
+  if (webDb) return webDb.filterDocumentsByFolder(folderId);
   const db = await getDb();
   const rows = await db.getAllAsync<any>(
     'SELECT * FROM documents WHERE folder_id = ? ORDER BY created_at DESC',
@@ -115,6 +141,7 @@ export async function filterDocumentsByFolder(folderId: number): Promise<Documen
 }
 
 export async function saveDocument(doc: NewDocument, pages: NewPage[]): Promise<number> {
+  if (webDb) return webDb.saveDocument(doc, pages);
   const db = await getDb();
   const docResult = await db.runAsync(
     'INSERT INTO documents (title, created_at, tags, full_ocr_search_text, folder_id) VALUES (?, ?, ?, ?, ?)',
@@ -137,6 +164,7 @@ export async function saveDocument(doc: NewDocument, pages: NewPage[]): Promise<
 }
 
 export async function deleteDocument(id: number): Promise<void> {
+  if (webDb) return webDb.deleteDocument(id);
   const db = await getDb();
   await db.runAsync('DELETE FROM documents WHERE id = ?', id);
 }
@@ -145,6 +173,7 @@ export async function updateDocumentMetadata(
   id: number,
   updates: { title?: string; tags?: string[]; fullOcrSearchText?: string; folderId?: number | null }
 ): Promise<void> {
+  if (webDb) return webDb.updateDocumentMetadata(id, updates);
   const db = await getDb();
   const sets: string[] = [];
   const values: any[] = [];
@@ -162,6 +191,7 @@ export async function updateDocumentMetadata(
 // ======= PAGES =======
 
 export async function getPagesForDocument(docId: number): Promise<PageModel[]> {
+  if (webDb) return webDb.getPagesForDocument(docId);
   const db = await getDb();
   const rows = await db.getAllAsync<any>(
     'SELECT * FROM pages WHERE document_id = ? ORDER BY sort_order ASC',
@@ -171,11 +201,13 @@ export async function getPagesForDocument(docId: number): Promise<PageModel[]> {
 }
 
 export async function deletePage(id: number): Promise<void> {
+  if (webDb) return webDb.deletePage(id);
   const db = await getDb();
   await db.runAsync('DELETE FROM pages WHERE id = ?', id);
 }
 
 export async function addPageToDocument(docId: number, page: NewPage): Promise<number> {
+  if (webDb) return webDb.addPageToDocument(docId, page);
   const db = await getDb();
   const result = await db.runAsync(
     'INSERT INTO pages (image_path, original_path, ocr_text, notes, sort_order, document_id) VALUES (?, ?, ?, ?, ?, ?)',
@@ -185,16 +217,19 @@ export async function addPageToDocument(docId: number, page: NewPage): Promise<n
 }
 
 export async function updatePageNotes(id: number, notes: string): Promise<void> {
+  if (webDb) return webDb.updatePageNotes(id, notes);
   const db = await getDb();
   await db.runAsync('UPDATE pages SET notes = ? WHERE id = ?', notes, id);
 }
 
 export async function deleteAllData(): Promise<void> {
+  if (webDb) return webDb.deleteAllData();
   const db = await getDb();
   await db.execAsync('DELETE FROM pages; DELETE FROM documents; DELETE FROM folders;');
 }
 
 export async function getAllTags(): Promise<string[]> {
+  if (webDb) return webDb.getAllTags();
   const db = await getDb();
   const rows = await db.getAllAsync<{ tags: string }>('SELECT tags FROM documents');
   const tagSet = new Set<string>();

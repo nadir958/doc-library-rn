@@ -15,7 +15,7 @@ import { useDocumentStore } from '../../src/store/documentStore';
 import { generateAndSharePdf } from '../../src/services/exportService';
 import { pickFromGallery, startSmartScan } from '../../src/services/scanService';
 import { GradientButton } from '../../src/components/GradientButton';
-import ImageViewing from 'react-native-image-viewing';
+import { ImageViewerModal } from '../../src/components/ImageViewerModal';
 
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,10 +23,13 @@ export default function DocumentDetailScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useAppTheme();
+  const rawId = Array.isArray(id) ? id[0] : id;
+  const documentId = Number(rawId);
 
   const [document, setDocument] = useState<DocumentModel | null>(null);
   const [pages, setPages] = useState<PageModel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -72,19 +75,36 @@ export default function DocumentDetailScreen() {
 
   const loadData = async () => {
     setLoading(true);
-    const docs = await db.getAllDocuments();
-    const found = docs.find(d => d.id === Number(id));
-    if (found) {
+    setError(null);
+    try {
+      if (!Number.isFinite(documentId)) {
+        throw new Error('Identifiant de document invalide.');
+      }
+
+      const found = await db.getDocumentById(documentId);
+      if (!found) {
+        setDocument(null);
+        setPages([]);
+        setError('Document introuvable.');
+        return;
+      }
+
       setDocument(found);
       setTitle(found.title);
       setTags([...found.tags]);
       const p = await db.getPagesForDocument(found.id);
       setPages(p);
+    } catch (e: any) {
+      console.error('Failed to load document:', e);
+      setDocument(null);
+      setPages([]);
+      setError(e?.message ?? 'Impossible de charger le document.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [id]);
+  useEffect(() => { loadData(); }, [documentId]);
 
 
 
@@ -168,7 +188,24 @@ export default function DocumentDetailScreen() {
     </View>
   );
 
-  if (!document) return null;
+  if (!document) {
+    return (
+      <View style={[styles.center, { backgroundColor: theme.colors.background, paddingHorizontal: Spacing.lg }]}>
+        <Ionicons name="document-text-outline" size={56} color={`${theme.colors.onSurface}33`} />
+        <Text style={[styles.emptyStateTitle, { color: theme.colors.onSurface }]}>
+          {error ?? 'Document indisponible'}
+        </Text>
+        <Text style={[styles.emptyStateText, { color: theme.colors.onSurfaceVariant }]}>
+          Vérifie que le document existe encore puis réessaie.
+        </Text>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: theme.colors.primary }]}>
+          <Text style={{ color: theme.isDark ? Colors.background : '#fff', fontWeight: '700' }}>
+            Retour
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const date = new Date(document.createdAt);
 
@@ -337,13 +374,11 @@ export default function DocumentDetailScreen() {
       </Modal>
 
       {/* Image Viewer (Zoom) */}
-      <ImageViewing
+      <ImageViewerModal
         images={pages.map(p => ({ uri: p.imagePath }))}
         imageIndex={currentImageIndex}
         visible={isImageViewerVisible}
         onRequestClose={() => setIsImageViewerVisible(false)}
-        swipeToCloseEnabled={true}
-        doubleTapToZoomEnabled={true}
       />
     </View>
   );
@@ -425,6 +460,24 @@ const styles = StyleSheet.create({
   breadcrumbTitle: { fontSize: 12, fontWeight: 'bold', flex: 1 },
   titleInput: { fontSize: 22, fontFamily: 'Manrope_700Bold', borderBottomWidth: 1, paddingBottom: 8, marginBottom: Spacing.lg },
   emptyPages: { alignItems: 'center', justifyContent: 'center', height: 300 },
+  emptyStateTitle: {
+    marginTop: Spacing.md,
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    marginTop: Spacing.sm,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  backBtn: {
+    marginTop: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 12,
+    borderRadius: Radius.md,
+  },
   pageBlock: { marginBottom: Spacing.xl },
   imageContainer: {
     height: 420,

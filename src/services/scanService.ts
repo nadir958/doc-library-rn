@@ -1,13 +1,19 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import DocumentScanner from 'react-native-document-scanner-plugin';
+import { Platform } from 'react-native';
+
+type DocumentScannerModule = typeof import('react-native-document-scanner-plugin').default;
 
 // Mode 1: Smart scan — utilise le scanner professionnel avec détection de contours
 export async function startSmartScan(): Promise<string[] | null> {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+
   try {
+    const DocumentScanner = require('react-native-document-scanner-plugin').default as DocumentScannerModule;
     const { scannedImages } = await DocumentScanner.scanDocument({
       maxNumDocuments: 10,
-      letUserAdjustCrop: true,
     });
 
     if (scannedImages && scannedImages.length > 0) {
