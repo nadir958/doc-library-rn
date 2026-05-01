@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, Image, TouchableOpacity, TextInput,
   StyleSheet, Alert, Modal, Pressable, ActivityIndicator,
 } from 'react-native';
-import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,6 @@ import { ImageViewerModal } from '../../src/components/ImageViewerModal';
 
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const navigation = useNavigation();
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useAppTheme();
@@ -41,37 +40,6 @@ export default function DocumentDetailScreen() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { updateMetadata, deleteDocument } = useDocumentStore();
-
-  useLayoutEffect(() => {
-    if (!document) return;
-    navigation.setOptions({
-      title: isEditing ? '' : (document?.title ?? ''),
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }}>
-          <TouchableOpacity 
-            onPress={isEditing ? handleSave : () => setIsEditing(true)}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name={isEditing ? 'checkmark-circle' : 'pencil-outline'} 
-              size={24} 
-              color={theme.colors.primary} 
-            />
-          </TouchableOpacity>
-          {!isEditing && (
-            <TouchableOpacity 
-              onPress={() => setShowMoreActions(true)}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="ellipsis-vertical" size={24} color={theme.colors.onSurface} />
-            </TouchableOpacity>
-          )}
-        </View>
-      ),
-    });
-  }, [navigation, isEditing, document, theme, t, showMoreActions]);
 
   const loadData = async () => {
     setLoading(true);
@@ -210,9 +178,43 @@ export default function DocumentDetailScreen() {
   const date = new Date(document.createdAt);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <>
+      <Stack.Screen
+        options={{
+          title: isEditing ? '' : document.title,
+          headerRight: () => (
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={isEditing ? handleSave : () => setIsEditing(true)}
+                hitSlop={15}
+                style={styles.headerActionBtn}
+              >
+                <Ionicons
+                  name={isEditing ? 'checkmark-circle' : 'pencil-outline'}
+                  size={24}
+                  color={theme.colors.primary}
+                />
+              </Pressable>
+              {!isEditing && (
+                <Pressable
+                  onPress={() => setShowMoreActions(true)}
+                  hitSlop={15}
+                  style={styles.headerActionBtn}
+                >
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={24}
+                    color={theme.colors.onSurface}
+                  />
+                </Pressable>
+              )}
+            </View>
+          ),
+        }}
+      />
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+        <ScrollView contentContainerStyle={styles.scroll}>
         {/* Breadcrumb */}
         <TouchableOpacity onPress={() => router.back()} style={styles.breadcrumb}>
           <Ionicons name="arrow-back" size={14} color={theme.colors.primary} />
@@ -374,13 +376,14 @@ export default function DocumentDetailScreen() {
       </Modal>
 
       {/* Image Viewer (Zoom) */}
-      <ImageViewerModal
-        images={pages.map(p => ({ uri: p.imagePath }))}
-        imageIndex={currentImageIndex}
-        visible={isImageViewerVisible}
-        onRequestClose={() => setIsImageViewerVisible(false)}
-      />
-    </View>
+        <ImageViewerModal
+          images={pages.map(p => ({ uri: p.imagePath }))}
+          imageIndex={currentImageIndex}
+          visible={isImageViewerVisible}
+          onRequestClose={() => setIsImageViewerVisible(false)}
+        />
+      </View>
+    </>
   );
 }
 
@@ -455,6 +458,15 @@ const styles = StyleSheet.create({
   scroll: { padding: Spacing.md, paddingTop: Spacing.sm },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   breadcrumb: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: Spacing.lg },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  headerActionBtn: {
+    padding: 4,
+    marginLeft: 12,
+  },
   breadcrumbText: { fontSize: 12 },
   slash: { color: 'rgba(255,255,255,0.1)', fontSize: 12 },
   breadcrumbTitle: { fontSize: 12, fontWeight: 'bold', flex: 1 },
